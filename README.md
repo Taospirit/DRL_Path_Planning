@@ -11,4 +11,4 @@ This is a DRL(Deep Reinforcement Learning) platform built with Gazebo for the pu
     Python 2.7.12
     tensorflow 1.12.0
     
-## zhihu <https://zhuanlan.zhihu.com/p/79712897>
+## <https://zhuanlan.zhihu.com/p/79712897>
