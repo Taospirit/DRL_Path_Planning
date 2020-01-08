@@ -12,4 +12,5 @@ sudo apt-get install -y ros-kinetic-interactive-marker-twist-server
 sudo apt-get install -y ros-kinetic-joint-state-controller
 sudo apt-get install -y ros-kinetic-diff-drive-controller
 sudo apt-get install -y ros-kinetic-lms1xx 
-
+sudo apt-get install -y ros-kinetic-controller-manager
+sudo apt-get install -y ros-kinetic-gazebo-ros-control
