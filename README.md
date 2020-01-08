@@ -38,8 +38,7 @@ git clone https://github.com/ros-drivers/pointgrey_camera_driver
 ```shell
 cd src
 mv -r ./pointgrey_camera_driver ~/
-cd ..
-catkin_make
+cd .. && catkin_make
 mv -r ~/pointgrey_camera_driver ./src
 ```
 #### P3: 编译时fatal error: flycapture/FlyCapture2.h: 
@@ -49,7 +48,7 @@ mv -r ~/pointgrey_camera_driver ./src
 
 ### 2. 代码运行问题
 #### P3: 启动10个动态障碍物时终端读取xarco参数命令报错
-#### S3: 可能python环境问题, 建议注释掉~/.bashrc中的conda环境配置, 保存后重启终端再尝试.
+#### S3: 可能python环境问题, 建议注释掉~/.bashrc中的conda环境配置, 保存后重启终端再尝试, python2.7使用正常.
 
 #### P4: 激光雷达维度参数问题
 gazebo仿真环境中采用的是SICK LMS1xx雷达, 它的xarco中的激光点云采样周期是720, 所以比代码里预设的360大了一倍. 具体可见[lms1xx_git_repo](https://github.com/clearpathrobotics/LMS1xx/blob/melodic-devel/urdf/sick_lms1xx.urdf.xacro), 其中sample_size=720.
