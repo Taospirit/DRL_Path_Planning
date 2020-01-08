@@ -4,3 +4,6 @@ devel/
 .vscode
 pointgrey_camera_driver/
 *.png
+*.pdf
+saved_network_dqn/
+logs/
