@@ -36,10 +36,9 @@ git clone https://github.com/ros-drivers/pointgrey_camera_driver
 #### S2: 移除pointgrey_camera_driver, 完后再移动回来(不放回会有新错误)
 相关文件已经生成了, 所以这里先把这个包移动到~/目录, 编译后再放回
 ```shell
-cd src
-mv -r ./pointgrey_camera_driver ~/
+mv -f ./src/pointgrey_camera_driver/* ~/
 cd .. && catkin_make
-mv -r ~/pointgrey_camera_driver ./src
+mv -f ~/pointgrey_camera_driver ./src
 ```
 #### P3: 编译时fatal error: flycapture/FlyCapture2.h: 
 #### S4: 
@@ -68,3 +67,5 @@ def laser_resize(self, laser_data):
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '/gpu:0'
 ```
+---
+## 4. 新版编译过程

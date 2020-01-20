@@ -1,10 +1,10 @@
 build/
 devel/
+# pointgrey_camera_driver/
+# hector_gazebo/
 .catkin_workspace
 .vscode
-pointgrey_camera_driver/
 *.png
 *.pdf
 saved_network_dqn/
 logs/
-hector_gazebo/

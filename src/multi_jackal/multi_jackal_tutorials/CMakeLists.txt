@@ -6,8 +6,8 @@ find_package(catkin REQUIRED COMPONENTS roslaunch)
 catkin_package()
 
 roslaunch_add_file_check(launch/one_jackal.launch)
-roslaunch_add_file_check(launch/two_jackal.launch)
-roslaunch_add_file_check(launch/three_jackal.launch)
+roslaunch_add_file_check(launch/two_jackal_without_block.launch)
+roslaunch_add_file_check(launch/three_jackal_with_block.launch)
 roslaunch_add_file_check(launch/jackal_with_gps.launch)
 
 install(

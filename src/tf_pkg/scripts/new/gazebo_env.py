@@ -270,12 +270,15 @@ class gazebo_env():
 
     def step(self, action_index, tele_input=None):
         # rate = rospy.Rate(1)
-        if tele_input is None:
-            self.cmd_vel.linear.x = self.actions[action_index][0]
-            self.cmd_vel.angular.z = self.actions[action_index][1]
-        else:
-            self.cmd_vel.linear.x = tele_input[0]
-            self.cmd_vel.angular.z = tele_input[-1]
+        self.cmd_vel.linear.x = tele_input[0] if tele_input else self.actions[action_index][0]
+        self.cmd_vel.angular.z = tele_input[-1] if tele_input else self.actions[action_index][1]
+        
+        # if tele_input is None:
+        #     self.cmd_vel.linear.x = self.actions[action_index][0]
+        #     self.cmd_vel.angular.z = self.actions[action_index][1]
+        # else:
+        #     self.cmd_vel.linear.x = tele_input[0]
+        #     self.cmd_vel.angular.z = tele_input[-1]
 
         self.pub_agent.publish(self.cmd_vel)
         self.action_count += 1
