@@ -1,5 +1,7 @@
 build/
 devel/
+# pointgrey_camera_driver/
+# hector_gazebo/
 .catkin_workspace
 .vscode
 *.png
