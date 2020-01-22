@@ -2,9 +2,11 @@ build/
 devel/
 .catkin_workspace
 .vscode
-pointgrey_camera_driver/
 *.png
 *.pdf
-saved_network_dqn/
-logs/
-hector_gazebo/
+
+# pointgrey_camera_driver/
+# saved_network_dqn/
+# logs/
+*/tempCodeRunnerFile.py
+__pycache__

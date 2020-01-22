@@ -86,29 +86,6 @@ class gazebo_env():
         self.action = [0, 0] # init action
         self.action_done = False
         self.action_count = 0
-        # rospy.wait_for_service(gazebo_set_topic)
-        # self.val = rospy.ServiceProxy(gazebo_set_topic, SetModelState)
-
-        # self.reset()
-        
-        # print ('-----before while in init-----')
-        # while not rospy.is_shutdown():
-        #     # print('enter while')
-        #     rate = rospy.Rate(10)
-        #     # print ('befor step')
-        #     # self.run()
-        #     # # print ('after step')
-        #     # if self.info == 1 or self.info == 2:
-        #     #     self.reset()
-           
-        #     # if self.run():
-        #     #     self.reset()
-        #     self.run()
-        #     # print ('info is ', self.info)
-
-        #     rate.sleep()
-        # print ('-----after while-----')
-
 
         # add_thread = threading.Thread(target = self.thread_job)
         # add_thread.start()
@@ -119,19 +96,16 @@ class gazebo_env():
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def img2cv(self):
-        pass
     #region ros_callback
     def image_callback(self, data):
         try:
             self.image_raw = self.bridge.imgmsg_to_cv2(data)
-
             img_data = cv2.resize(self.image_raw, (self.img_size, self.img_size)) # 80x80x3
             img_data = cv2.cvtColor(img_data, cv2.COLOR_RGB2GRAY)
             img_data = np.reshape(img_data, (self.img_size, self.img_size))
             self.image_data_set.append(img_data)
 
-            if len(self.image_data_set) > self.store_data_size:
+            if len(self.image_data_set) > self.store_data_size: 
                 del self.image_data_set[0]
 
         except CvBridgeError as e:
@@ -143,27 +117,20 @@ class gazebo_env():
         # min_range:=0.1 max_range:=30.0
         # range_min = 0.1 range_max = 10.0 meters
         self.laser_raw = data.ranges
-
         laser_clip = np.clip(self.laser_raw, 0, self.laser_clip) / self.laser_clip # normalization laser data
-        # laser_data = []
-        # for i in range(0, len(self.laser_clip), 2):
-        #     tmp = (self.laser_clip[i] + self.laser_clip[i+1]) / 2
-        #     laser_data.append(tmp)
         laser_data = [(laser_clip[i] + laser_clip[i+1]) / 2 for i in range(0, len(laser_clip), 2)]    
         self.laser_data_set.append(laser_data)
 
-        if len(self.laser_data_set) > self.store_data_size:
+        if len(self.laser_data_set) > self.store_data_size: 
             del self.laser_data_set[0]
 
     def gazebo_states_callback(self, data):
-        # flag = 0
         self.gazebo_obs_states = [{'x':0, 'y':0} for name in data.name if 'obs' in name]
 
         for i in range(len(data.name)):
             p_x = data.pose[i].position.x
             p_y = data.pose[i].position.y
             name = str(data.name[i])
-
             if 'obs' in name:
                 self.gazebo_obs_states[int(data.name[i][-1])] = {'x':p_x, 'y':p_y}
             elif name == 'agent_point_goal':
@@ -172,10 +139,8 @@ class gazebo_env():
             elif name == 'agent':
                 self.agent_position['x'] = p_x
                 self.agent_position['y'] = p_y
-            
+
         self.goal_dist = self.euclidean_distance(self.agent_position, self.agent_goal)
-        # print ('update self.goal_dist {}'.format(self.goal_dist))
-        
         # info test
         # print ('========')
         # for item in self.gazebo_obs_states:
@@ -194,15 +159,17 @@ class gazebo_env():
 
             for i in range(self.num_stack_frame):
                 index = -1 - i * self.num_sikp_frame
-                if abs(index) > len(self.image_data_set):
-                    index = 0
-                image_stack[:, :, -1 - i] = self.image_data_set[index]
+                # if abs(index) > len(self.image_data_set):
+                #     index = 0
+                # image_stack[:, :, -1 - i] = self.image_data_set[index]
                 
-                index = -1 - i * self.num_sikp_frame
-                if abs(index) > len(self.laser_data_set):
-                    index = 0
-                laser_stack[-1 - i, :] = self.laser_data_set[index]
+                image_stack[:, :, -1 - i] = self.image_data_set[index if abs(index) < len(self.image_data_set) else 0]
 
+                # index = -1 - i * self.num_sikp_frame
+                # if abs(index) > len(self.laser_data_set):
+                #     index = 0
+                # laser_stack[-1 - i, :] = self.laser_data_set[index]
+                laser_stack[-1 - i, :] = self.laser_data_set[index if abs(index) < len(self.laser_data_set) else 0]
             state_stack = [image_stack, laser_stack]
         
         return state_stack
@@ -215,21 +182,20 @@ class gazebo_env():
         # delta_dist = 0 if self.goal_dist_last == 0 else self.goal_dist_last - self.goal_dist
         delta_dist = self.goal_dist_last - self.goal_dist if self.goal_dist_last != 0 else 0
         reward += dist_rate * delta_dist
-        print ('goal_dist: {:.3f}, goal_dist_last: {:.3f}'.format(self.goal_dist, self.goal_dist_last))
-        print ('delta_dist: {:.3f}'.format(delta_dist))
-        print ('cmd_vel_change: {:.3f} / '.format(cmd_vel_reward))
+        # print ('goal_dist: {:.3f}, goal_dist_last: {:.3f}'.format(self.goal_dist, self.goal_dist_last))
+        # print ('delta_dist: {:.3f}'.format(delta_dist))
+        # print ('cmd_vel_change: {:.3f} / '.format(cmd_vel_reward))
 
         if self.info == 1: # coll
             reward += self.reward_near_obs
         if self.info == 2: # arrive at goal
             reward += self.reward_near_goal
-        # print ('info {}, reward {}'.format(self.info, reward))
-        print ('cal_reward: {}'.format(delta_dist*dist_rate - cmd_vel_reward*cmd_rate))
+        # print ('cal_reward: {}'.format(delta_dist*dist_rate - cmd_vel_reward*cmd_rate))
         return reward
 
     def get_info(self):
         self.info = 0
-        print ('goal_dist from get_info(): {:.3f}'.format(self.goal_dist))
+        # print ('goal_dist from get_info(): {:.3f}'.format(self.goal_dist))
         if self.goal_dist < self.dist_goal_arrive:
             print ('=====!!!agent get goal at {:.2f}!!!====='.format(self.goal_dist))
             self.info = 2
@@ -250,9 +216,7 @@ class gazebo_env():
 
     def get_done(self):# arrived or collsiped or time_out
         self.done = False
-        if self.info == 1 or self.info == 2:
-            self.done = True
-
+        if self.info == 1 or self.info == 2: self.done = True
         return self.done
     #endregion
 
@@ -260,9 +224,7 @@ class gazebo_env():
         print ('----reset_env-----')
         self.pose_msg.pose.position.x = 0
         self.pose_msg.pose.position.y = 0
-        # self.pose_msg.pose.position = [0, 0, 0]
         self.pub_state.publish(self.pose_msg)
-
         self.action_count = 0
         # init state
         return self.get_state()
@@ -285,8 +247,8 @@ class gazebo_env():
         end = time.time()
         # print ('during {}'.format(end - start))
         #XXX: to be tested
-        during = 0.3
-        print ('wait for {} seconds'.format(during))
+        during = 0.2
+        # print ('wait for {} seconds'.format(during))
         time.sleep(during)
 
         info = self.get_info()
@@ -316,6 +278,11 @@ def get_key():
     # print ('get key:{} from tele, type is {}'.format(key, type(key)))
     return key
 
+def get_totoal_reward(r_l, gamma):
+    if len(r_l) == 1:
+        return r_l[0]
+    else:
+        return r_l.pop(0) + gamma * get_totoal_reward(r_l, gamma)
 
 if __name__ == "__main__":
     # gazebo_env = gazebo_env()
@@ -338,13 +305,24 @@ if __name__ == "__main__":
             'a': [0, 0, 0, 1],
             's': [-1, 0, 0, 0],
             'd': [0, 0, 0, -1]}
+    r_list = []
+    action_n = 0
     while not rospy.is_shutdown():
         print ('===test reward, wait for tele_input===')
         key = get_key()
 
         if key in move.keys():
             state_, reward, done, info = env.step(0, move[key])
-            print ('reward {}, info {}'.format(reward, info))
+            action_n += 1
+            r_list.append(reward)
+            print ('reward {:.3f}, info {}'.format(reward, info))
+
+            if done:
+                r = get_totoal_reward(r_list, 0.9)
+                print ('----action_n: {}, total_reward: {:.3f}'.format(action_n, r))
+                r_list = []
+                action_n = 0
+
         else:
             env.step(0, [0, 0])
 

@@ -1,0 +1,2 @@
+ep 4765, a_n 50, epsilon 0.100, total_reward 15.020883239057866, step 171959
+ep 4766, a_n 51, epsilon 0.100, total_reward 12.123239057866, step 172912
