@@ -51,6 +51,7 @@ class gazebo_env():
                         [0.5, 0.0], [0.5, -1.0], [0.0, -1.0],
                         [0.0, 0.0], [0.0, 1.0]]
         self.n_actions = len(self.actions)
+        # paraments
         self.reward_near_goal = 1000
         self.reward_near_obs = -10
         self.num_sikp_frame = 2
@@ -59,7 +60,7 @@ class gazebo_env():
 
         self.laser_size = 360
         self.laser_clip = 5
-        self.img_size = 80
+        self.img_size = 80    
 
         self.euclidean_distance = lambda p1, p2: math.hypot(p1['x'] - p2['x'], p1['y'] - p2['y'])
         self.goal_dist_last, self.goal_dist = 0, 0
@@ -105,8 +106,7 @@ class gazebo_env():
             img_data = np.reshape(img_data, (self.img_size, self.img_size))
             self.image_data_set.append(img_data)
 
-            if len(self.image_data_set) > self.store_data_size: 
-                del self.image_data_set[0]
+            if len(self.image_data_set) > self.store_data_size: del self.image_data_set[0]
 
         except CvBridgeError as e:
             print (e)
@@ -121,8 +121,7 @@ class gazebo_env():
         laser_data = [(laser_clip[i] + laser_clip[i+1]) / 2 for i in range(0, len(laser_clip), 2)]    
         self.laser_data_set.append(laser_data)
 
-        if len(self.laser_data_set) > self.store_data_size: 
-            del self.laser_data_set[0]
+        if len(self.laser_data_set) > self.store_data_size: del self.laser_data_set[0]
 
     def gazebo_states_callback(self, data):
         self.gazebo_obs_states = [{'x':0, 'y':0} for name in data.name if 'obs' in name]
@@ -150,7 +149,7 @@ class gazebo_env():
     #endregion
 
     #region get_env_info
-    def get_state(self):# sensor data collection
+    def _get_state(self):# sensor data collection
         state_stack = []
         
         if self.image_data_set and self.laser_data_set:
@@ -174,7 +173,7 @@ class gazebo_env():
         
         return state_stack
 
-    def get_reward(self, dist_rate=2, cmd_rate=0.1):
+    def _get_reward(self, dist_rate=2, cmd_rate=0.1):
         reward = 0
         # print (type(self.cmd_vel_last['v']), type(self.cmd_vel.linear.x))
         cmd_vel_reward = abs(self.cmd_vel_last['v'] - self.cmd_vel.linear.x) + abs(self.cmd_vel_last['w'] - self.cmd_vel.angular.z)
@@ -193,9 +192,9 @@ class gazebo_env():
         # print ('cal_reward: {}'.format(delta_dist*dist_rate - cmd_vel_reward*cmd_rate))
         return reward
 
-    def get_info(self):
+    def _get_info(self):
         self.info = 0
-        # print ('goal_dist from get_info(): {:.3f}'.format(self.goal_dist))
+        # print ('goal_dist from _get_info(): {:.3f}'.format(self.goal_dist))
         if self.goal_dist < self.dist_goal_arrive:
             print ('=====!!!agent get goal at {:.2f}!!!====='.format(self.goal_dist))
             self.info = 2
@@ -214,7 +213,7 @@ class gazebo_env():
         # print ('goal_dist {:.3f}'.format(self.goal_dist))
         return self.info
 
-    def get_done(self):# arrived or collsiped or time_out
+    def _get_done(self):# arrived or collsiped or time_out
         self.done = False
         if self.info == 1 or self.info == 2: self.done = True
         return self.done
@@ -227,20 +226,13 @@ class gazebo_env():
         self.pub_state.publish(self.pose_msg)
         self.action_count = 0
         # init state
-        return self.get_state()
+        return self._get_state()
         # TODO-dynamic obs
 
     def step(self, action_index, tele_input=None):
         # rate = rospy.Rate(1)
         self.cmd_vel.linear.x = tele_input[0] if tele_input else self.actions[action_index][0]
         self.cmd_vel.angular.z = tele_input[-1] if tele_input else self.actions[action_index][1]
-        
-        # if tele_input is None:
-        #     self.cmd_vel.linear.x = self.actions[action_index][0]
-        #     self.cmd_vel.angular.z = self.actions[action_index][1]
-        # else:
-        #     self.cmd_vel.linear.x = tele_input[0]
-        #     self.cmd_vel.angular.z = tele_input[-1]
 
         self.pub_agent.publish(self.cmd_vel)
         self.action_count += 1
@@ -254,11 +246,11 @@ class gazebo_env():
         # print ('wait for {} seconds'.format(during))
         time.sleep(during)
 
-        info = self.get_info()
-        done = self.get_done()
+        info = self._get_info()
+        done = self._get_done()
         if done: self.reset()
-        reward = self.get_reward()
-        state_ = self.get_state()
+        reward = self._get_reward()
+        state_ = self._get_state()
 
         self.cmd_vel_last['v'] = self.cmd_vel.linear.x
         self.cmd_vel_last['w'] = self.cmd_vel.angular.z

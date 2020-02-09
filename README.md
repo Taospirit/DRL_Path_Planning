@@ -69,7 +69,14 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '/gpu:0'
 ```
 ---
-## 4. 新版编译过程
+## 4. 新版编译过程(turtlebot版)
+#### 1. NOTES:
 1. 已经将hector_gazebo和pointgrey_camera_driver包的依赖直接放入src中
 2. pointgrey_camera_driver仍然需要经过：首次编译后 —— 移出后编译 —— 再放回。
-3. todo
+
+#### 2. install tf2 support for python3:
+    catkin_make --cmake-args \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+            -DPYTHON_INCLUDE_DIR=/usr/include/python3.5m \
+            -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so

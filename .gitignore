@@ -4,7 +4,7 @@ devel/
 # hector_gazebo/
 .catkin_workspace
 .vscode
-*.png
+# *.png
 *.pdf
 
 # pointgrey_camera_driver/
